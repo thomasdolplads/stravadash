@@ -7,7 +7,7 @@ interface FetchOptions {
 
 export async function fetchStravaApi(endpoint: string, options: FetchOptions = {}) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const accessToken = cookies().get('access_token')?.value;
+    const accessToken = (await cookies()).get('access_token')?.value;
 
     const headers: HeadersInit = {
         'Content-Type': 'application/json',

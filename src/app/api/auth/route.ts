@@ -21,14 +21,21 @@ export async function GET(req: NextRequest) {
             grant_type: 'authorization_code',
         }),
     });
-    const tokenData: any = await tokenResponse.json();
-    if (!tokenResponse.ok) {
-        console.error('Failed to fetch token:', tokenResponse.statusText);
-        return {message: 'Failed to fetch token', status: tokenResponse.status};
+
+    interface TokenData {
+        access_token: string;
+        athlete: {
+            id: string;
+        };
     }
 
-    await createSession(tokenData.athlete.id)
+    const tokenData: TokenData = await tokenResponse.json();
+    if (!tokenResponse.ok) {
+        console.error('Failed to fetch token:', tokenResponse.statusText);
+        return NextResponse.json({message: 'Failed to fetch token'}, {status: tokenResponse.status});
+    }
 
+    await createSession(tokenData.athlete.id);
 
     const response = NextResponse.redirect(new URL('/dashboard', req.url));
     response.cookies.set('access_token', tokenData.access_token, {

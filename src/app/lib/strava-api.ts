@@ -6,7 +6,7 @@ interface FetchOptions {
     body?: any;
 }
 
-export async function fetchStravaApi(endpoint: string, options: FetchOptions = {}) {
+export async function fetchStravaApi(endpoint: string, options: FetchOptions = {}): Promise<any> {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const accessToken = (await cookies()).get('access_token')?.value;
 
@@ -37,13 +37,10 @@ export async function fetchStravaApi(endpoint: string, options: FetchOptions = {
     return data;
 }
 
-export async function fetchActivities(endpoint: string, options: FetchOptions = {}) {
+export async function fetchActivities(endpoint: string, options: FetchOptions = {}): Promise<Activity[]> {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const accessToken = (await cookies()).get('access_token')?.value;
-    const perPage = 30; // Define how many results per page you want
-    const allActivities: Activity[] = []; // Array to hold all activities
-    let page = 1;
-    let responseStatus: number | undefined;
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 60 * 1000); // Set a 1-minute timeout
     const headers: HeadersInit = {
@@ -53,13 +50,11 @@ export async function fetchActivities(endpoint: string, options: FetchOptions = 
     if (accessToken) {
         headers['Authorization'] = `Bearer ${accessToken}`;
     } else {
-        return {}
+        throw new Error(`Missing stravatoken: ${403}`);
     }
 
     try {
-        // add page loop
         const url = `${baseUrl}/api/strava/${endpoint}`
-        console.log('fetchto: ', url)
         const response = await fetch(url, {
             method: 'GET',
             headers,
@@ -67,37 +62,27 @@ export async function fetchActivities(endpoint: string, options: FetchOptions = 
         });
 
         const data: Activity[] = await response.json();
-        responseStatus = response.status
         if (!response.ok) {
             console.error('API error:', data);
-            return NextResponse.json({error: 'Failed to fetch activities'}, {status: responseStatus});
         }
 
-        allActivities.push(...data); // Add the data to the accumulated array
-
-        if (!data || data.length === 0) { // TODO
-            // No more data, break the loop
-            // return NextResponse.json()
-        }
-
-        page++;
+        return data;
     } catch (error: any) {
         if (error.name === 'AbortError') {
-            return NextResponse.json({error: 'Request timed out'}, {status: 408}); // HTTP status code for Request Timeout
+            throw new Error(`Request timed out: ${408}`);
         }
-        return NextResponse.json({error: 'An unexpected error occurred'}, {status: 500});
+        throw new Error(`Unexpected error: ${500}`);
     } finally {
-        clearTimeout(timeout); // Clear the timeout once the request is complete or aborted
+        clearTimeout(timeout);
     }
-
-
-    return NextResponse.json(allActivities, {status: responseStatus});
 }
 
-interface Activity {
-    // Define the structure of an activity based on the Strava API response
-    id: number;
-    name: string;
-    distance: number;
-    // Add other fields as needed
+export async function fetchClubActivities(clubId: string): Promise<Activity[]> {
+    const response = await fetch(`/api/strava/clubs/${clubId}/activities`);
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch club activities. Status code: ${response.status}`);
+    }
+
+    return await response.json();
 }

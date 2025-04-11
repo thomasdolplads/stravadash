@@ -4,6 +4,7 @@ import {v4 as uuidv4} from 'uuid';
 export default async function Page() {
     const activities = await fetchActivities('clubs/1475192/activities')
 
+
     return (
         <div>
             <h1>Club Activities</h1>

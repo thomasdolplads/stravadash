@@ -1,5 +1,6 @@
 import {cookies} from "next/headers";
 import {NextResponse} from "next/server";
+import {Activity} from "@/app/lib/definitions";
 
 interface FetchOptions {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE';

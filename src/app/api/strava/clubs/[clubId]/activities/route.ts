@@ -1,4 +1,5 @@
 import {NextRequest, NextResponse} from 'next/server';
+import {Activity} from "@/app/lib/definitions";
 
 export async function GET(request: NextRequest) {
     const perPage = 30; // Define how many results per page you want

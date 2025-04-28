@@ -2,11 +2,12 @@ import {NextRequest, NextResponse} from 'next/server';
 import {Activity} from "@/app/lib/definitions";
 
 export async function GET(request: NextRequest) {
-    const allActivities: Activity[] = []; // Array to hold all activities
+    const allActivities: Activity[] = [];
     let page = 1;
 
     try {
-        // Get the Authorization header that middleware added
+        const searchParams = request.nextUrl.searchParams;
+        const activityId = searchParams.get('activityId');
         const authHeader = request.headers.get('Authorization');
         console.log('Stravarequest:: ', authHeader)
 
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
             );
         }
         while (true) {
-            const url = `https://www.strava.com/api/v3/clubs/1475192/activities?page=${page}&per_page=30`;
+            const url = `https://www.strava.com/api/v3/clubs/activities/${activityId}`;
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {

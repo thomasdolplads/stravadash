@@ -9,6 +9,7 @@ const NavLinks = () => {
     const links = [
         {name: 'Dashboard', href: '/dashboard'},
         {name: 'Activities', href: '/dashboard/activities'},
+        {name: 'Activity Zones', href: '/dashboard/activity-zones'},
     ];
 
     return (

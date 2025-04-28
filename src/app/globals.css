@@ -1,5 +1,9 @@
 @import "tailwindcss";
+@plugin "flyonui";
+@import "flyonui/variants.css"; /* Require only if you want to use FlyonUI JS component */
 
+/* If you gitignored node_modules use below method */
+@source "./node_modules/flyonui/dist/index.js";
 :root {
   --background: #ffffff;
   --foreground: #171717;

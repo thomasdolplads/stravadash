@@ -40,6 +40,7 @@ const middleware = async (request: NextRequest) => {
         session?.userId &&
         !request.nextUrl.pathname.startsWith('/dashboard')
     ) {
+
         return NextResponse.redirect(new URL('/dashboard', request.nextUrl))
     }
 

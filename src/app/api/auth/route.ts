@@ -1,5 +1,7 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {createSession} from "@/app/lib/session";
+import {neon} from '@neondatabase/serverless';
+import {TokenData} from "@/app/lib/definitions";
 
 export async function GET(req: NextRequest) {
     const {searchParams} = new URL(req.url);
@@ -22,18 +24,36 @@ export async function GET(req: NextRequest) {
         }),
     });
 
-    interface TokenData {
-        access_token: string;
-        athlete: {
-            id: string;
-        };
-    }
-
     const tokenData: TokenData = await tokenResponse.json();
+
     if (!tokenResponse.ok) {
         console.error('Failed to fetch token:', tokenResponse.statusText);
         return NextResponse.json({message: 'Failed to fetch token'}, {status: tokenResponse.status});
     }
+
+    console.log('tokendata:: ', tokenData)
+
+    try {
+        const sql = neon(`${process.env.DATABASE_URL}`);
+
+        const athletes = await sql`SELECT *
+                                   FROM athlete
+                                   where id = ${tokenData.athlete.id}`
+        console.log('NEON select:: ', athletes)
+        if (athletes.length == 0) {
+
+            const athlete = tokenData.athlete
+            const insertion = await sql`INSERT INTO athlete
+                                        values (${athlete.id}, ${athlete.firstname}, 'todo', ${athlete.profile_medium})`
+
+            console.log('NEON insertion:: ', insertion)
+        }
+
+        // console.log('athlete from NEON:: ', athlete)
+    } catch (error) {
+        console.log('error:: ', error)
+    }
+
 
     await createSession(tokenData.athlete.id);
 
